@@ -1,7 +1,7 @@
 var test=new Vue({
     el:'#test',
     data: {
-        text: 'Hello Word!'
+        text: 'Hello World!'
     }
 })
 
