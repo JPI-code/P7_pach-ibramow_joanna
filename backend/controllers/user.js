@@ -1,6 +1,5 @@
 // MODULES
-const mysql = require('../dbConnect').connection; //Connexion à la bd
-const env = require("../environment"); // Récupère les variables d'environnement
+const mysql = require('../connection') //Connexion à la bd
 const bcrypt = require('bcrypt'); // Pour crypter le mot de passe
 const jwt = require("jsonwebtoken"); // Génère un token sécurisé
 const fs = require("fs"); // Permet de gérer les fichiers stockés
@@ -88,7 +87,26 @@ exports.delete = (req, res, next) => {
         if (result.length == 0) {
             return res.status(401).json({ error: "Utilisateur non trouvé !" });
         }
+        passwordHashed = result[0].password;
 
+    bcrypt
+      .compare(password, passwordHashed)
+      .then((valid) => {
+        if (!valid) {
+          return res.status(401).json({ error: "Mot de passe incorrect !" });
+        }
+        sqlDeleteUser = "DELETE FROM User WHERE userID = ?";
+        mysql.query(sqlDeleteUser, [userID], function (err, result) {
+          if (err) {
+            return res.status(500).json(err.message);
+          }
+          if (result.affectedRows == 0) {
+            return res.status(400).json({ message: "Suppression échouée" });
+          }
+          res.status(200).json({ message: "Utilisateur supprimé !" });
+        });
+      })
+      .catch((e) => res.status(500).json(e));
         const filename = result[0].avatarUrl.split("/images/")[1];
         if (filename !== "avatarDefault.jpg") {
             fs.unlink(`images/${filename}`, (e) => { // On supprime le fichier image en amont
@@ -97,25 +115,7 @@ exports.delete = (req, res, next) => {
                 }
             });
         }
-        passwordHashed = result[0].password;
-//TODO: change the order
-        bcrypt.compare(password, passwordHashed)
-            .then(valid => {
-                if (!valid) {
-                    return res.status(401).json({ error: "Mot de passe incorrect !" });
-                }
-                sqlDeleteUser = "DELETE FROM User WHERE userID = ?";
-                mysql.query(sqlDeleteUser, [userID], function (err, result) {
-                    if (err) {
-                        return res.status(500).json(err.message);
-                    }
-                    if (result.affectedRows == 0) {
-                        return res.status(400).json({ message: "Suppression échouée" });
-                    }
-                    res.status(200).json({ message: "Utilisateur supprimé !" });
-                });
-            })
-            .catch(e => res.status(500).json(e));
+        
     });
 };
 // FIN MIDDLEWARE
@@ -130,6 +130,7 @@ exports.profile = (req, res, next) => {
     if (userIDAsked === "yourProfile") {
         userIDAsked = userID;
     }
+//Substitution format for dateCreation taken form MySql convention
 
     sqlGetUser = `SELECT email, firstName, lastName, pseudo, bio, avatarUrl, role, DATE_FORMAT(dateCreation, 'Inscrit depuis le %e %M %Y à %kh%i') AS dateCreation,
     COUNT(CASE WHEN userID = ? then 1 else null end) AS yourProfile FROM User WHERE userID = ?`;

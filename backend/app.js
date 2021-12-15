@@ -1,21 +1,15 @@
 const express = require('express')
 const app = express()
 
-const mongoose = require('mongoose')
+// const connection = require('connection')
 const bodyParser = require('body-parser')
 
 const cors = require('cors')
 
 const userRoutes= require("./routes/userRoutes")
-const sauceRoutes= require("./routes/sauceRoutes")
+const postRoutes= require("./routes/postRoutes")
 
-//CONNECTING TO DATABASE
-mongoose.connect("mongodb://localhost:27017/testingDataBase",
-{useNewUrlParser:true})
-.then (()=> console.log("connected to database"))
-.catch (() => console.error("Error in database connection"))
-
-
+//CONNECTING TO DATABASE IS DECLARED IN CONNECTION.JS FILE
 
 
 // Middleware Header pour contourner les erreurs en débloquant certains systèmes de sécurité CORS, afin que tout le monde puisse faire des requetes depuis son navigateur
@@ -36,6 +30,6 @@ app.use(bodyParser.json());
 //setting up 
 app.use("/images", express.static("./images"))
 app.use("/api/auth", userRoutes)
-app.use("/api/sauces", sauceRoutes)
+app.use("/api/post", postRoutes)
 
 module.exports = app;

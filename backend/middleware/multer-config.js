@@ -1,9 +1,12 @@
 const multer = require('multer');
 
 const MIME_TYPES = {
+  //content type, not a path
   'image/jpg': 'jpg',
-  'image/jpeg': 'jpg',
-  'image/png': 'png'
+  'image/jpeg': 'jpeg',
+  'image/png': 'png',
+  'image/gif': 'gif',
+  'video/mp4': 'mp4',
 };
 //To save files on DISK (in difference to memory storage)
 const storage = multer.diskStorage({
