@@ -73,6 +73,26 @@ exports.createPost = (req, res, next) => {
         res.status(201).json({ message: "Post crée !" });
     });
 };
+
+exports.modifyPost = (req, res, next) => {
+    const userID = res.locals.userID;
+    const legend = req.body.legend;
+    const gifUrl = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
+    console.log(gifUrl);
+    console.log(req.file.filename);
+
+    let sqlCreatePost;
+    let values;
+
+    sqlCreatePost = "INSERT INTO post VALUES (NULL, ?, ?, ?, NULL, NULL, NOW())";
+    values = [userID, legend, gifUrl];
+    mysql.query(sqlCreatePost, values, function (err, result) {
+        if (err) {
+            return res.status(500).json(err.message);
+        }
+        res.status(201).json({ message: "Post modifié !" });
+    });
+};
 // FIN MIDDLEWARE
 
 // MIDDLEWARE DELETEPOST pour supprimer les messages
