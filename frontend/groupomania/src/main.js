@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import App from './App.vue'
-import Router from './Router.js'
+import Router from './router.js'
 import Axios from 'axios' //Library JS
 
 //where to send requests

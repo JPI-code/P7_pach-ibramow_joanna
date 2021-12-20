@@ -12,7 +12,6 @@
           v-on:input="sendData"
         />
 
-              <div class="col-lg-2 col-md-4 mb-2">
         <input
           class="form-control text-center"
           type="text"
@@ -24,9 +23,9 @@
           v-model="password"
           v-on:input="sendData"
         />
-      </div>
+     
       <button
-      type="submit"
+      type="button"
       v-on:click="connectUser"> 
       SUBMIT
       </button>

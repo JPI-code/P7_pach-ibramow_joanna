@@ -12,7 +12,7 @@
           v-on:input="sendData"
         />
 
-              <div class="col-lg-2 col-md-4 mb-2">
+      
         <input
           class="form-control text-center"
           type="text"
@@ -24,7 +24,7 @@
           v-model="lastName"
           v-on:input="sendData"
         />
-      </div>
+      
 </div>
 
 </template>
