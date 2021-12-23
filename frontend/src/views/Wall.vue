@@ -217,3 +217,20 @@ export default {
   },
 };
 </script>
+
+<style>
+.post-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2rem;
+}
+.user-avatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 30%;
+  margin-right: 1rem;
+}
+</style>
+

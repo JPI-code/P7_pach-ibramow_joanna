@@ -9,6 +9,7 @@
       v-if="posts"
       v-bind:userId="posts.at(-1).userID"
       v-bind:reaction="posts.at(-1).yourReaction"
+      v-bind:postID="posts.at(-1).postID"
       v-on:d-comment-input="displayCommentInput(posts.at(-1).postID)"
       v-on:reaction-down="sendReaction(posts.at(-1).postID, -1)"
       v-on:reaction-up="sendReaction(posts.at(-1).postID, 1)"

@@ -84,7 +84,7 @@ export default {
       this.$router.push({
         name: "Post",
         params: {
-          id: postId,
+        id: postId
         },
       });
     },
@@ -132,3 +132,28 @@ export default {
   },
 }
 </script>
+
+<style>
+.post {
+  margin-bottom: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e6e6e6;
+  background-color: #fff;
+  /* width: 80%; */
+}
+.postGif {
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  border: 1px solid #e6e6e6;
+  background-color: #fff;
+}
+.avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+}
+</style>
