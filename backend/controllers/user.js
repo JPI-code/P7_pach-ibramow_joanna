@@ -1,5 +1,5 @@
 // MODULES
-const mysql = require('../connection') //Connexion à la bd
+const mysql = require('../connection.js').connection //Connexion à la bd
 const bcrypt = require('bcrypt'); // Pour crypter le mot de passe
 const jwt = require("jsonwebtoken"); // Génère un token sécurisé
 const fs = require("fs"); // Permet de gérer les fichiers stockés
@@ -8,23 +8,27 @@ const fs = require("fs"); // Permet de gérer les fichiers stockés
 // MIDDLEWARE SIGNUP  - Inscription de l'utilisateur et hashage du mot de passe
 exports.signup = (req, res, next) => {
 
+    console.log(req.body);
+
     bcrypt.hash(req.body.password, 10)
-        .then(hash => {
-            const email = req.body.email;
-            const firstName = req.body.firstName;
-            const lastName = req.body.lastName;
-            const password = hash;
+    .then(hash => {
+        const email = req.body.email;
+        const firstName = req.body.firstName;
+        const lastName = req.body.lastName;
+        const password = hash;
+        const avatarUrl = `${req.protocol}://${req.get("host")}/images/avatarDefault.jpg`;
 
-            let sqlSignup;
-            let values;
-
-            sqlSignup = "INSERT INTO user VALUES (NULL, ?, ?, ?, NULL, ?, NULL, avatarUrl, NOW())";
-            values = [email, firstName, lastName, password,];
-            mysql.query(sqlSignup, values, function (err, result) {
-                //error from database
-                if (err) {
-                    return res.status(500).json(err.message);
-                }
+        let sqlSignup;
+        let values;
+        
+        sqlSignup = "INSERT INTO user VALUES (NULL, ?, ?, ?, NULL, 'user', ?, NULL, ?, NOW())";
+        values = [email, firstName, lastName, password,avatarUrl];
+        mysql.query(sqlSignup, values, function (err, result) {
+            //error from database
+            if (err) {
+                console.log(err.sqlMessage)
+                return res.status(500).json(err.sqlMessage);
+            }
                 res.status(201).json({ message: "Utilisateur créé !" });
             });
         })
@@ -39,11 +43,11 @@ exports.login = (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
 
-    const sqlFindUser = "SELECT userID, password FROM User WHERE email = ?";
+    const sqlFindUser = "SELECT userID, password FROM user WHERE email = ?";
 //recherche de l'utilisateur dans la base de données
     mysql.query(sqlFindUser, [email], function (err, result) {
         if (err) {
-            return res.status(500).json(err.message);
+            return res.status(500).json(err.sqlMessage);
         }
         if (result.length == 0) {
             return res.status(401).json({ error: "Utilisateur non trouvé !" });
@@ -54,18 +58,23 @@ exports.login = (req, res, next) => {
             .then(valid => {
 //si le mot de passe est incorrect
                 if (!valid) {
-                    return res.status(401).json({ error: "Mot de passe incorrect !" });
+                    return res.status(401).json({ error: "Incorrect password !" });
                 }
                 res.status(200).json({
                     token: jwt.sign(
                         { userID: result[0].userID },
-                        env.token,
+                        "RANDOM_TOKEN_SECRET",
                         { expiresIn: "24h" }
-                    )
+                    ),
+                    userID: result[0].userID
                 });
             })
-            .catch(function (err) {res.status(500).json(err)});
+            .catch((error) =>{
+                console.log(error);
+                res.status(500).json(error);
+            });
     });
+    console.log(`user ${email} logged in`);
 };
 // FIN MIDDLEWARE
 
@@ -122,14 +131,16 @@ exports.delete = (req, res, next) => {
 
 // MIDDLEWARE PROFILE
 exports.profile = (req, res, next) => {
+    console.log(req.body);
     const userID = res.locals.userID;
     let userIDAsked = req.params.id;
 
     let sqlGetUser;
 
-    if (userIDAsked === "yourProfile") {
+    if (userIDAsked === "yourProfile")  {
         userIDAsked = userID;
     }
+    console.log(userIDAsked)
 //Substitution format for dateCreation taken form MySql convention
 
     sqlGetUser = `SELECT email, firstName, lastName, pseudo, bio, avatarUrl, role, DATE_FORMAT(dateCreation, 'Inscrit depuis le %e %M %Y à %kh%i') AS dateCreation,

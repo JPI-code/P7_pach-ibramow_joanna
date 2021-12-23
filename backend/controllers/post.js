@@ -1,11 +1,26 @@
 
 // MODULES
-const mysql = require('../connection')
+const mysql = require('../connection').connection
 const fs = require("fs"); // Permet de gérer les fichiers stockés
 // FIN MODULES
 
+function getNewestFile(files, path) {
+    var out = [];
+    files.forEach(function(file) {
+        var stats = fs.statSync(path + "/" +file);
+        if(stats.isFile()) {
+            out.push({"file":file, "mtime": stats.mtime.getTime()});
+        }
+    });
+    out.sort(function(a,b) {
+        return b.mtime - a.mtime;
+    })
+    return (out.length>0) ? out[0].file : "";
+}
+
 // MIDDLEWARE GETALLPOSTS pour obtenir tous les messages
 exports.getAllPosts = (req, res, next) => {
+    console.log("Trying to get all posts");
     const userID = res.locals.userID;
 
     let sqlGetPosts;
@@ -21,7 +36,7 @@ exports.getAllPosts = (req, res, next) => {
             return res.status(500).json(err.message);
         }
         if (result.length == 0) {
-            return res.status(400).json({ message: "Aucun post à afficher !" });
+            return res.status(400).json({});
         }
         res.status(200).json(result);
     });
@@ -55,31 +70,40 @@ exports.getOnePost = (req, res, next) => {
 
 // MIDDLEWARE CREATEPOST pour céer les messages
 exports.createPost = (req, res, next) => {
-    const userID = res.locals.userID;
+    console.log(req.body) 
+    const userID = req.body.userID;
     const legend = req.body.legend;
-    const gifUrl = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
-    console.log(gifUrl);
-    console.log(req.file.filename);
+    fs.readdir('../backend/images', function(err, files) {
+        if (err) { return console.error(err); }
+        var file = getNewestFile(files, '../backend/images');
+        //process audioFile here or pass it to a function...
+        //console.log(file);
+        const gifUrl = `${req.protocol}://${req.get("host")}/images/${file}`;
+        console.log(gifUrl)
+        let sqlCreatePost;
+        let values;
+        sqlCreatePost = "INSERT INTO post VALUES (NULL, ?, ?, ?, NULL, NULL, NOW())";
+        values = [userID, legend, gifUrl];
+        console.log(values) 
+        mysql.query(sqlCreatePost, values, function (err, result) {
+            if (err) {
+                console.log(err.sqlMessage)
+                return res.status(500).json(err.sqlMessage);
+            }
+            res.status(201).json({ message: "Post crée !" });
+        });
+    })
 
-    let sqlCreatePost;
-    let values;
-
-    sqlCreatePost = "INSERT INTO post VALUES (NULL, ?, ?, ?, NULL, NULL, NOW())";
-    values = [userID, legend, gifUrl];
-    mysql.query(sqlCreatePost, values, function (err, result) {
-        if (err) {
-            return res.status(500).json(err.message);
-        }
-        res.status(201).json({ message: "Post crée !" });
-    });
 };
 
 exports.modifyPost = (req, res, next) => {
     const postID = req.params.id;
-    const userID = res.locals.userID;
+    const userID = res.body.userID;
     const legend = req.body.legend;
     const gifUrl = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
 
+
+    
     let sqlModifyPost;
     sqlModifyPost = "UPDATE post SET legend =? WHERE postID = ? AND userID = ?"
     mysql.query(sqlSelectPost, [legend, postID, userID], function (err, result) {
@@ -133,8 +157,8 @@ exports.deletePost = (req, res, next) => {
 // MIDDLEWARE CREATECOMMENT pour créer des commentaires
 exports.createComment = (req, res, next) => {
     const postID = req.params.id;
-    const userID = res.locals.userID;
-    const body = req.body.body;
+    const userID = req.body.userID;
+    const body = req.body.content;
 
     let sqlCreateComment;
     let values;
@@ -152,7 +176,7 @@ exports.createComment = (req, res, next) => {
 
 // MIDDLEWARE REACTPOST pour créer une réaction sur les messages
 exports.reactPost = (req, res, next) => {
-    const userID = res.locals.userID;
+    const userID = req.body.userID;
     const reaction = req.body.reaction;
     const postID = req.params.id;
 

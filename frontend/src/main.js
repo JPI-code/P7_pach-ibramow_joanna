@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import App from './App.vue'
-import Router from './router.js'
+import router from './router.js'
 import Axios from 'axios' //Library JS
 
 //where to send requests
@@ -9,7 +9,7 @@ Axios.defaults.baseURL = "http://localhost:3000/api"
 Vue.prototype.$axios = Axios
 
 new Vue ({
-    Router, 
+    router, 
     render: h=> h(App)
 })
 

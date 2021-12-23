@@ -14,3 +14,14 @@
   margin-top: 60px;
 }
 </style>
+
+
+<script>
+export default {
+  mounted() {
+    let fontAwesomeScript = document.createElement("script");
+    fontAwesomeScript.src = "https://kit.fontawesome.com/c5c10cb967.js";
+    document.head.appendChild(fontAwesomeScript);
+  },
+}
+</script>

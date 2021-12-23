@@ -3,7 +3,7 @@
     <div class="nav">
         
     <router-link to="/">Login</router-link>
-    <router-link to="/">Signup</router-link>
+    <router-link to="/Signup">Signup</router-link>
     </div>
     
 </template>

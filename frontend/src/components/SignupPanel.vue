@@ -3,32 +3,28 @@
         <input
           class="form-control text-center"
           type="text"
-          placeholder="Votre mail"
-          id="email"
+          placeholder="Votre prénom"
+          id="firstName"
           required
-          maxlength="100"
-          aria-label="Entrez votre mail"
-          v-model="email"
+          maxlength="30"
+          aria-label="Entrez votre prénom"
+          v-model="firstName"
           v-on:input="sendData"
         />
 
+      
         <input
           class="form-control text-center"
           type="text"
-          placeholder="Votre mot de passe"
-          id="password"
+          placeholder="Votre nom"
+          id="lastName"
           required
           maxlength="30"
-          aria-label="Entrez votre mot de passe"
-          v-model="password"
+          aria-label="Entrez votre nom"
+          v-model="lastName"
           v-on:input="sendData"
         />
-     
-      <button
-      type="button"
-      v-on:click="connectUser"> 
-      SUBMIT
-      </button>
+      
 </div>
 
 </template>
@@ -36,10 +32,10 @@
 <script>
 export default {
     name: "SignupPanel",
-    data: ()=> {
+    data() {
         return {
-            email: "",
-            password: "",
+            firstName: "",
+            lastName: "",
         }
     },
 
@@ -53,15 +49,7 @@ export default {
         this.$emit("data-sent", this.$data);
     //   }
     },
-    connectUser(){
-        const emailValid = document.getElementById("email").checkValidity();
-        const passwordValid = document.getElementById("password").checkValidity();
-        if (emailValid && passwordValid) {
-            //return the event when sb is connected
-        this.$emit("connect-user");
-      }
-    }
   },
-
 }
 </script>
+

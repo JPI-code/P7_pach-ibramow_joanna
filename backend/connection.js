@@ -6,3 +6,4 @@ exports.connection = mysql.createPool({
     database: "Groupomania",
     timezone: "local"
 })
+

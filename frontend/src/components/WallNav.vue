@@ -7,7 +7,7 @@
         //name has to be the same as COMPONENT vue
         name: 'Profile',
         params: {
-            id: 'MyProfile'
+            id: 'yourProfile'
         }
     }
         ">My Profile</router-link>
