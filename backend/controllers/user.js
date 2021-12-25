@@ -1,14 +1,13 @@
 // MODULES
-const mysql = require('../connection.js').connection //Connexion à la bd
-const bcrypt = require('bcrypt'); // Pour crypter le mot de passe
-const jwt = require("jsonwebtoken"); // Génère un token sécurisé
-const fs = require("fs"); // Permet de gérer les fichiers stockés
-// FIN MODULES
+const mysql = require('../connection.js').connection //CONNEXION TO DATABASE
+const bcrypt = require('bcrypt'); // TO CRYPTE PASSWORD
+const jwt = require("jsonwebtoken"); // GENERATE SECURED TOKEN
+const fs = require("fs"); // TO MANAGE STORED IMAGES
 
-// MIDDLEWARE SIGNUP  - Inscription de l'utilisateur et hashage du mot de passe
+
+// MIDDLEWARE SIGNUP  - REGISTER USER AND HASH PASSWORD 
 exports.signup = (req, res, next) => {
 
-    console.log(req.body);
 
     bcrypt.hash(req.body.password, 10)
     .then(hash => {
@@ -35,16 +34,16 @@ exports.signup = (req, res, next) => {
         //error from Express 
         .catch(function (err) {res.status(500).json(err)});
 };
-// FIN MIDDLEWARE
+// END OF MIDDLEWARE
 
 
-// MIDDLEWARE LOGIN avec vérification de l'email unique
+// MIDDLEWARE LOGIN WITH EMAIL UNIQUNESS CHECKED
 exports.login = (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
 
     const sqlFindUser = "SELECT userID, password FROM user WHERE email = ?";
-//recherche de l'utilisateur dans la base de données
+//LOOK FOR USER IN DATABASE
     mysql.query(sqlFindUser, [email], function (err, result) {
         if (err) {
             return res.status(500).json(err.sqlMessage);
@@ -52,11 +51,11 @@ exports.login = (req, res, next) => {
         if (result.length == 0) {
             return res.status(401).json({ error: "Utilisateur non trouvé !" });
         }
-//si l'utilisateur existe, vérification du mot de passe
+//IF USER EXISTS, PASSWORD IS CHECKED
 //result from MySqlQuery
         bcrypt.compare(password, result[0].password)
             .then(valid => {
-//si le mot de passe est incorrect
+//IF INCORRECT PASSWORD
                 if (!valid) {
                     return res.status(401).json({ error: "Incorrect password !" });
                 }
@@ -78,7 +77,7 @@ exports.login = (req, res, next) => {
 };
 // FIN MIDDLEWARE
 
-// MIDDLEWARE DELETE pour supprimer un utilisateur
+// MIDDLEWARE DELETE TO DELETE AN USER
 exports.delete = (req, res, next) => {
     const password = req.body.password;
     let passwordHashed;
@@ -118,7 +117,7 @@ exports.delete = (req, res, next) => {
       .catch((e) => res.status(500).json(e));
         const filename = result[0].avatarUrl.split("/images/")[1];
         if (filename !== "avatarDefault.jpg") {
-            fs.unlink(`images/${filename}`, (e) => { // On supprime le fichier image en amont
+            fs.unlink(`images/${filename}`, (e) => { // PICTURE DELETING
                 if (e) {
                     console.log(e);
                 }
@@ -131,8 +130,7 @@ exports.delete = (req, res, next) => {
 
 // MIDDLEWARE PROFILE
 exports.profile = (req, res, next) => {
-    console.log(req.body);
-    const userID = res.locals.userID;
+    const userID = req.query.userID;
     let userIDAsked = req.params.id;
 
     let sqlGetUser;
@@ -159,7 +157,7 @@ exports.profile = (req, res, next) => {
 
 // MIDDLEWARE MODIFY
 exports.modify = (req, res, next) => {
-    const userID = res.locals.userID;
+    const userID = req.body.userID;
     const email = req.body.email;
     const pseudo = req.body.pseudo;
     const bio = req.body.bio;
@@ -170,7 +168,7 @@ exports.modify = (req, res, next) => {
     let sqlChangePassword;
     let values;
 
-    if (req.file) { // Si le changement concerne l'avatar on update directement
+    if (req.file) { // IF THE MODIFICATION CONCERS AVATAR - WE UPDATE DIRECTLY
         const avatarUrl = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
 
         sqlFindUser = "SELECT avatarUrl FROM User WHERE userID = ?";
@@ -182,7 +180,7 @@ exports.modify = (req, res, next) => {
             const filename = result[0].avatarUrl.split("/images/")[1];
             sqlModifyUser = "UPDATE User SET avatarUrl = ? WHERE userID = ?";
             if (filename !== "avatarDefault.jpg") {
-                fs.unlink(`images/${filename}`, () => { // On supprime le fichier image en amont
+                fs.unlink(`images/${filename}`, () => { // WE DELETE IMAGE FILE
                     mysql.query(sqlModifyUser, [avatarUrl, userID], function (err, result) {
                         if (err) {
                             return res.status(500).json(err.message);
@@ -200,7 +198,7 @@ exports.modify = (req, res, next) => {
             }
         });
 
-    } else { // Si le changement concerne les infos de l'user on demande le mdp
+    } else { // IF MODIFICATION CONCERNS USER DETAILS A PASSWORD IS REQUIRED
         sqlFindUser = "SELECT password FROM User WHERE userID = ?";
         mysql.query(sqlFindUser, [userID], function (err, result) {
             if (err) {
@@ -218,7 +216,7 @@ exports.modify = (req, res, next) => {
                         return res.status(401).json({ error: "Mot de passe incorrect !" });
                     }
 
-                    if (newPassword) { // Si un nouveau mdp est défini
+                    if (newPassword) { // TO DEFINE NEW PASSWORD 
                         bcrypt.hash(newPassword, 10)
                             .then(hash => {
                                 sqlChangePassword = "UPDATE User SET email=?, pseudo=?, bio=?, password=? WHERE userID = ?";
@@ -235,7 +233,7 @@ exports.modify = (req, res, next) => {
                             })
                             .catch(e => res.status(500).json(e));
 
-                    } else { // Si le mdp reste le même
+                    } else { // IF WE KEEP THE SAME PASSWORD 
                         sqlModifyUser = "UPDATE User SET email=?, pseudo=?, bio=? WHERE userID = ?";
                         values = [email, pseudo, bio, userID];
                         mysql.query(sqlModifyUser, values, function (err, result) {
@@ -255,7 +253,7 @@ exports.modify = (req, res, next) => {
 };
 
 exports.role = (req, res, next) => {
-    const userID = res.locals.userID;
+    const userID = req.query.userID;
 
     sqlFindUser = "SELECT role FROM User WHERE userID = ?";
     mysql.query(sqlFindUser, [userID], function (err, result) {
@@ -269,4 +267,4 @@ exports.role = (req, res, next) => {
     });
 };
 
-// FIN MIDDLEWARE
+// END OF MIDDLEWARE

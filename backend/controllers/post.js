@@ -18,10 +18,9 @@ function getNewestFile(files, path) {
     return (out.length>0) ? out[0].file : "";
 }
 
-// MIDDLEWARE GETALLPOSTS pour obtenir tous les messages
+// MIDDLEWARE GETALLPOSTS TO OBTAIN ALL MESSAGES
 exports.getAllPosts = (req, res, next) => {
-    console.log("Trying to get all posts");
-    const userID = res.locals.userID;
+    const userID = req.query.userID;
 
     let sqlGetPosts;
 
@@ -159,7 +158,7 @@ exports.createComment = (req, res, next) => {
     const postID = req.params.id;
     const userID = req.body.userID;
     const body = req.body.content;
-
+    console.log("comment-content:", req.body.content);
     let sqlCreateComment;
     let values;
 
@@ -179,7 +178,9 @@ exports.reactPost = (req, res, next) => {
     const userID = req.body.userID;
     const reaction = req.body.reaction;
     const postID = req.params.id;
-
+    console.log("REACTION : " + reaction);
+    console.log("POSTID : " + postID);
+    console.log("USERID : " + userID);
     let sqlReaction;
     let values;
 

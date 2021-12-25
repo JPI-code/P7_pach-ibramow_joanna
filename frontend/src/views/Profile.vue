@@ -2,12 +2,12 @@
   <div>
     <wall-nav />
     <div>
-      <form v-if="user.yourProfile === 1">
-        <input type="file" accept="image/*" v-on:change="updateAvatar(event)" />
-        <input type="text" name="pseudo" v-model="user.pseudo" />
-        <input type="email" name="email" v-model="user.email" />
-        <input type="password" name="password" v-model="user.password" />
-        <textarea type="text" name="bio" v-model="user.bio"></textarea>
+        <form class="changeForm" v-if="user.yourProfile === 1">
+        <span>avatar:<input type="file" accept="image/*" v-on:change="updateAvatar" /></span>
+        <span>pseudo:<input type="text" name="pseudo" v-model="user.pseudo" /></span>
+        <span>email:<input type="email" name="email" v-model="user.email" /></span>
+        <span>password:<input type="password" name="password" v-model="user.password" /></span>
+        <p>bio:<textarea type="text" name="bio" v-model="user.bio"></textarea></p>
       </form>
     </div>
     <div>
@@ -37,7 +37,6 @@ export default {
   data: () => {
     return {
       connected: true,
-      messageError: null,
       user: {},
     };
   },
@@ -45,8 +44,11 @@ export default {
     getUser() {
       this.$axios
       //sessionStorage in this case: as long as user has token, sessionStorage keep his id
-        .get(`auth/${this.$route.params.id}`, {params:{userID: sessionStorage.getItem("userID")}})
-        .then(function(data) {
+        .get(`/auth/${this.$route.params.id}`, {params: { 
+          id: this.$route.params.id,
+          userID: sessionStorage.getItem("userID")
+        }})
+        .then((data) => {
           this.user = data.data[0];
         })
         .catch((e) => {
@@ -56,9 +58,10 @@ export default {
     updateAvatar(event) {
       const image = event.target.files[0];
       const formData = new FormData();
-      formData.append("image", image);
+      formData.append("file", image);
+      formData.append("userID", sessionStorage.getItem("userID"));
       this.$axios
-        .put("user/modify", formData)
+        .put("auth/modify", formData)
         .then(() => {
           this.getUser();
         })
@@ -77,6 +80,7 @@ export default {
 
       if (newPassword === "") {
         data = {
+          userID: sessionStorage.getItem("userID"),
           email: email,
           pseudo: pseudo,
           bio: bio,
@@ -84,6 +88,7 @@ export default {
         };
       } else {
         data = {
+          userID: sessionStorage.getItem("userID"),
           email: email,
           pseudo: pseudo,
           bio: bio,
@@ -114,7 +119,7 @@ export default {
         })
         .catch((e) => {
           if (e.response.status === 401) {
-            this.messageError = "Invalid password";
+            console.log("Invalid password");
           }
         });
     },
@@ -131,3 +136,12 @@ export default {
   },
 };
 </script>
+
+
+<style>
+.changeForm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+</style>

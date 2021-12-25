@@ -1,6 +1,7 @@
 <template> 
 <div>
     <main-nav />
+    <img class="logo" src="assets/icon-left-front-monochrome-black.png" alt="Logo" title="Grouporama" />
     <form onsubmit="return false"> 
         <SignupPanel
         v-on:data-sent="updateSingupData"
@@ -59,4 +60,8 @@ export default{
     }
 }
 </script>
+
+<style>
+/* to be added */
+</style>
 

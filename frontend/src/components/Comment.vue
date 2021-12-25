@@ -1,11 +1,11 @@
 <template>
-  <div>
+  <div class="comment">
     <slot name="commentDelete"></slot>
     <div class="comment">
       <div class="author">
         <p role="link" v-on:click="openProfile(userId)">
-          <slot name="userName"></slot>
           <slot name="userAvatar"></slot>
+          <slot name="userName"></slot>
           <slot name="userPseudo"></slot>
         </p>
       </div>
@@ -18,7 +18,7 @@
 
       <div class="reactions">
         <i
-          class="fas fa-thumb-up"
+          class="fas fa-thumbs-up"
           role="button"
           :class="reactionUp"
           v-on:click="sendReactionUp"
@@ -28,7 +28,7 @@
           <slot name="commentUp"></slot>
         </span>
         <i
-          class="fas fa-thumb-down"
+          class="fas fa-thumbs-down"
           role="button"
           :class="reactionDown"
           v-on:click="sendReactionDown"
@@ -50,61 +50,60 @@
 
 <script>
 export default {
-  name:"Comment",
+  name: "Comment",
   props: ["userId", "reaction"],
-  data: function(){
+  data: function (){
     return {
       reactionUp: "",
       reactionDown: "",
-    }
+    };
   },
   methods: {
     openProfile(userId) {
       this.$router.push({ name: "Profile", params: { id: userId } });
     },
     sendReactionUp() {
-      if (this.reaction === 1)
-      {
-        this.$emit("reaction-none")
-      }
-      else
-      {
-        this.$emit("reaction-up")
+ if (this.reaction === 1) {
+        this.$emit("reaction-none");
+      } else {
+        this.$emit("reaction-up");
       }
     },
     sendReactionDown() {
-      if (this.reaction === -1)
-      {
-        this.$emit("reaction-none")
-      }
-      else
-      {
-        this.$emit("reaction-down")
+ if (this.reaction === -1) {
+        this.$emit("reaction-none");
+      } else {
+        this.$emit("reaction-down");
       }
     },
-    updateReaction(){
-      if (this.reaction === 1)
-      {
-        this.reactionUp = "active"
-        this.reactionDown = "inactive"
+updateReaction() {
+      if (this.reaction === 1) {
+        this.reactionUp = "reactionActive";
+        this.reactionDown = "reactionNone";
+      } else if (this.reaction === -1) {
+        this.reactionUp = "reactionNone";
+        this.reactionDown = "reactionActive";
+      } else {
+        this.reactionUp = "reactionNone";
+        this.reactionDown = "reactionNone";
       }
-      else if (this.reaction === -1)
-      {
-        this.reactionUp = "inactive"
-        this.reactionDown = "active"
-      }
-      else
-      {
-        this.reactionUp = "inactive"
-        this.reactionDown = "inactive"
-      }
-    }
+    },
   },
-  mounted(){
-    this.updateReaction()
+   mounted() {
+    this.updateReaction();
+    console.log(this.body)
   },
-  updated(){
-    this.updateReaction()
-  }
-}
+  updated() {
+    this.updateReaction();
+  },
+};
 </script>
+
+<style>
+.comment {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+  border: 2px solid #e6e6e6;
+}
+</style>

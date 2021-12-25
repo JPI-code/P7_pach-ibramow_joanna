@@ -29,9 +29,6 @@ export default{
     },
     methods:{
         login(){
-            console.log("send data from login");
-            console.log(this.$data.email)
-            console.log(this.$data.password)
             this.$axios.post("/auth/login", this.$data)
             .then((res)=> {
                 sessionStorage.setItem("userID", res.data.userID)

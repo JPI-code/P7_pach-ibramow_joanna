@@ -19,7 +19,6 @@
         <i
           class="fas fa-angle-up fa-lg"
           role="button"
-          :class="reactionUp"
           v-on:click="sendReactionUp"
         ></i>
         <span v-on:click="sendReactionUp">Like</span>
@@ -29,7 +28,6 @@
         <i
           class="fas fa-angle-down fa-lg"
           role="button"
-          :class="reactionDown"
           v-on:click="sendReactionDown"
         ></i>
         <span v-on:click="sendReactionDown">Dislike</span>
@@ -80,7 +78,6 @@ export default {
       });
     },
     openPost(postId) {
-      console.log(postId)
       this.$router.push({
         name: "Post",
         params: {
@@ -108,8 +105,8 @@ export default {
         this.$emit("reaction-down")
       }
     },
-    displayCommentInput() {
-      this.$emit("display-comment-input", this.postId);
+   displayCommentInput(postId) {
+      this.$emit("display-comment-input", postId);
     },
     updateReaction() {
       if (this.reaction === 1) {

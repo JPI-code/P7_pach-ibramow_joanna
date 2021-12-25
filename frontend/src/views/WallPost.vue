@@ -35,9 +35,8 @@
 
       <template
         v-slot:postGif
-        v-if="posts.at(-1).gifUrl.includes('.gif') || posts.at(-1).gifUrl.includes('.jpg') || posts.at(-1).gifUrl.includes('.jpeg')"
+        v-if="posts.at(-1).gifUrl != null && posts.at(-1).gifUrl != ''"
       >
-      <!-- {{ posts.at(-1).gifUrl.includes('.jpeg') }} -->
         <img v-bind:src="posts.at(-1).gifUrl" alt="Post image" />
       </template>
 
@@ -63,7 +62,8 @@
           v-on:comment-sent="updateComment"
           v-if="commentInputShow && commentID === posts.at(-1).postID"
         >
-          <button type="submit" v-on:click.prevent="postComment(posts.at(-1).postID)">
+          <button type="submit" 
+          v-on:click.prevent="postComment(posts.at(-1).postID)">
             Send comment
           </button>
         </create-comment>
@@ -83,35 +83,35 @@
         <i
           class="fas fa-times"
           role="button"
-          v-on:click="deleteComment(comment.postID)"
+          v-on:click="deletePost(comment.postID)"
         ></i>
         <span>Delete the comment</span>
       </template>
 
       <template v-slot:userAvatar>
         <img
-          v-bind:src="posts.at(-1).userAvatar"
+          v-bind:src="comment.avatarUrl"
           alt="User avatar"
         />
       </template>
 
-      <template v-slot:userName> {{ posts.at(-1).name }} {{ posts.at(-1).surname }} </template>
-      <template v-slot:userPseudo v-if="posts.at(-1).pseudo !== null">
-        @{{ posts.at(-1).pseudo }}
+      <template v-slot:userName> {{ comment.firstName }} {{ comment.lastName }} </template>
+      <template v-slot:userPseudo v-if="comment.pseudo !== null">
+        @{{ comment.pseudo }}
       </template>
 
-      <template v-slot:commentContent>
-        <p>{{ comment.commentContent }}</p>
+      <template v-slot:commentBody>
+        <p>{{ comment.body }}</p>
       </template>
       
       <template v-slot:commentDate>
-        <small>{{ comment.commentDate }}</small>
+         <small>{{ comment.dateCreation }}</small>
       </template>
       <template v-slot:commentUp>
-        <span>{{ comment.commentUp }}</span>
+        <span>{{ comment.countUp }}</span>
       </template>
       <template v-slot:commentDown>
-        <span>{{ comment.commentDown }}</span>
+        <span>{{ comment.countDown }}</span>
       </template>
     </comment>
 
@@ -150,7 +150,7 @@ export default {
   },
   methods: {
     getUserRole() {
-      this.$axios.get("/auth/role")
+      this.$axios.get("/auth/role", {params: {userID: sessionStorage.getItem("userID")}})
       .then((response) => {
         this.userRole = response.data[0].role;
       })
@@ -244,6 +244,8 @@ export default {
   mounted() {
     this.getPosts();
     this.getUserRole()
+    console.log("Comments:")
+    console.log(this.comments)
     document.title ="Groupomania - Post";
   },
 };

@@ -11,8 +11,8 @@
     <post
       v-for="post in posts"
       v-bind:key="post.postID"
-      v-bind:postID="post.postID"
-      v-bind:userID="post.userID"
+      v-bind:postId="post.postID"
+      v-bind:userId="post.userID"
       v-bind:reaction="post.yourReaction"
       v-on:reaction-up="sendReaction(post.postID, 1)"
       v-on:reaction-down="sendReaction(post.postID, -1)"
@@ -82,12 +82,12 @@
       <template v-slot:createComment>
         <create-comment
           v-on:comment-sent="updateComment"
-          v-if="commentInputShow && commentID === post.postId"
+          v-if="commentInputShow"
         >
           <template v-slot:sendButton>
-          <button type="submit" v-on:click.prevent="postComment(post.postID)">
-            Send comment
-          </button>
+            <button type="submit" v-on:click.prevent="postComment(post.postID)">
+              Send comment
+            </button>
           </template>
         </create-comment>
       </template>
@@ -139,7 +139,7 @@ export default {
     },
     getPosts() {
       console.log("trying to get posts")
-      this.$axios.get("/post")
+      this.$axios.get("/post", {params:{userID: sessionStorage.getItem("userID")}})
       .then((response) => {
         this.posts = response.data;
         console.log(response.data)
@@ -190,17 +190,18 @@ export default {
       this.commentID = postId;
     },
     updateComment(content) {
-      this.commentContent = content.body;
+      console.log("updating comment: " + content.comment)
+      this.commentContent = content.comment;
     },
     postComment(postId) {
       const formValid = document.getElementsByName("commentForm")[0]
       .checkValidity();
+      console.log(this.commentContent)
       if (formValid) {
         this.$axios
         .post("/post/" + postId + "/comment/", {content: this.commentContent, userID: sessionStorage.getItem("userID")})
-        .then((that=this) => {
-          //that = this: to avoid arrow function before this, in order not to change "this" context
-          that.commentInputShow = false;
+        .then(() => {
+          this.commentInputShow = false;
         })
         .catch((error) => {console.log(error)})
       }

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <form name="createComment">
+     <form name="commentForm">
       <div>
         <textarea
           name="comment"
@@ -31,6 +31,7 @@ export default {
   },
   methods: {
     sendComment: function() {
+      console.log(this.$data.comment)
       this.$emit("comment-sent", this.$data);
     },
   },
