@@ -121,7 +121,7 @@ export default {
   methods: {
     getUserRole() {
       this.$axios
-        .get("/auth/role")
+        .get("/auth/role", {params: {userID: sessionStorage.getItem("userID")}})
         .then((response) => {
           this.userRole = response.data[0].role;
         })

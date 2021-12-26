@@ -87,7 +87,7 @@ export default {
     getUser() {
       this.$axios
         //sessionStorage in this case: as long as user has token, sessionStorage keep his id
-        .get(`/auth/${this.$route.params.id}`, {
+        .get(`/auth/profile/${this.$route.params.id}`, {
           params: {
             id: this.$route.params.id,
             userID: sessionStorage.getItem("userID"),
