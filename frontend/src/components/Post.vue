@@ -1,11 +1,11 @@
 <template>
-  <div>
+  <div class="post">
     <slot name="deletePost"></slot>
-    <div class="post">
+    <div>
       <div class="author">
-        <p role="link" v-on:click="openProfile(userId)">
-          <slot name="userName"></slot>
+        <p class="author-info" role="link" v-on:click="openProfile(userId)">
           <slot name="userAvatar"></slot>
+          <slot name="userName"></slot>
           <slot name="userPseudo"></slot>
         </p>
       </div>
@@ -26,7 +26,7 @@
           <slot name="postUp"></slot>
         </span>
         <i
-          class="fas fa-thumbs-up fa-lg"
+          class="fas fa-thumbs-down fa-lg"
           role="button"
           v-on:click="sendReactionDown"
         ></i>
@@ -44,7 +44,7 @@
             role="button"
             v-on:click="displayCommentInput"
           ></i>
-          <span v-on:click="displayCommentInput" >Comment the post</span>
+          <span v-on:click="displayCommentInput">Comment the post</span>
         </a>
         <slot name="createComment"></slot>
       </p>
@@ -53,10 +53,11 @@
           <slot name="postDate"></slot>
         </small>
       </div>
-      
     </div>
   </div>
 </template>
+
+
 
 <script>
 export default {
@@ -73,7 +74,7 @@ export default {
       this.$router.push({
         name: "Profile",
         params: {
-        id: userId,
+          id: userId,
         },
       });
     },
@@ -81,33 +82,27 @@ export default {
       this.$router.push({
         name: "Post",
         params: {
-        id: postId
+          id: postId,
         },
       });
     },
     sendReactionUp() {
-      if (this.reaction === 1)
-      {
-        this.$emit("reaction-none")
-      }
-      else
-      {
-        this.$emit("reaction-up")
+      if (this.reaction === 1) {
+        this.$emit("reaction-none");
+      } else {
+        this.$emit("reaction-up");
       }
     },
     sendReactionDown() {
-      if (this.reaction === -1)
-      {
-        this.$emit("reaction-none")
-      }
-      else
-      {
-        this.$emit("reaction-down")
+      if (this.reaction === -1) {
+        this.$emit("reaction-none");
+      } else {
+        this.$emit("reaction-down");
       }
     },
-   displayCommentInput() {
-    //  console.log("POST ID")
-    //  console.log(this.postId)
+    displayCommentInput() {
+      //  console.log("POST ID")
+      //  console.log(this.postId)
       this.$emit("display-comment-input", this.postId);
     },
     updateReaction() {
@@ -129,19 +124,22 @@ export default {
   updated() {
     this.updateReaction();
   },
-}
+};
 </script>
-
 <style>
-.post {
+.author-info{
+  display: flex;
+  align-items: center;
+}
+.post{
+  border-radius: 5px;
+  border: 1px solid #ccc;
   margin-bottom: 1rem;
-  border-radius: 0.5rem;
-  border: 1px solid #e6e6e6;
-  background-color: #fff;
-  /* width: 80%; */
+  padding: 1rem;
+  width: 80%;
 }
 .postGif {
-  width: 100%;
+  display: inline-block;
   height: auto;
   max-height: 300px;
   overflow: hidden;
@@ -149,10 +147,18 @@ export default {
   border: 1px solid #e6e6e6;
   background-color: #fff;
 }
+.postGif img{
+  width: 100%;
+}
 .avatar {
   width: 20px;
   height: 20px;
   border-radius: 50%;
   margin-right: 0.5rem;
+}
+.author {
+  display: flex;
+  align-items: center;
+  /* border: 2px solid blue; */
 }
 </style>

@@ -24,7 +24,7 @@ exports.getAllPosts = (req, res, next) => {
 
     let sqlGetPosts;
 
-    sqlGetPosts = `SELECT Post.postID, post.userID, legend, gifUrl, DATE_FORMAT(post.dateCreation, 'le %e %M %Y à %kh%i') AS dateCreation, firstName, lastName, pseudo, avatarUrl,
+    sqlGetPosts = `SELECT Post.postID, post.userID, legend, gifUrl, DATE_FORMAT(post.dateCreation, '%e %M %Y at %kh%i') AS dateCreation, firstName, lastName, pseudo, avatarUrl,
     COUNT(CASE WHEN reaction.reaction = 1 then 1 else null end) AS countUp,
     COUNT(CASE WHEN reaction.reaction = -1 then 1 else null end) AS countDown,
     SUM(CASE WHEN reaction.userID = ? AND reaction.reaction = 1 then 1 WHEN reaction.userID = ? AND reaction.reaction = -1 then -1 else 0 end) AS yourReaction,
@@ -49,7 +49,7 @@ exports.getOnePost = (req, res, next) => {
 
     let sqlGetPost;
 
-    sqlGetPost = `SELECT Post.postID, post.userID, legend, body, gifUrl, DATE_FORMAT(post.dateCreation, 'le %e %M %Y à %kh%i') AS dateCreation, firstName, lastName, pseudo, avatarUrl,
+    sqlGetPost = `SELECT Post.postID, post.userID, legend, body, gifUrl, DATE_FORMAT(post.dateCreation, '%e %M %Y at %kh%i') AS dateCreation, firstName, lastName, pseudo, avatarUrl,
     COUNT(CASE WHEN reaction.reaction = 1 then 1 else null end) AS countUp,
     COUNT(CASE WHEN reaction.reaction = -1 then 1 else null end) AS countDown,
     SUM(CASE WHEN reaction.userID = ? AND reaction.reaction = 1 then 1 WHEN reaction.userID = ? AND reaction.reaction = -1 then -1 else 0 end) AS yourReaction,
@@ -97,7 +97,7 @@ exports.modifyPost = (req, res, next) => {
     const postID = req.params.id;
     const userID = req.body.userID;
     const legend = req.body.legend;
-    // const gifUrl = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
+    //const gifUrl = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
 
 
     
@@ -112,10 +112,13 @@ exports.modifyPost = (req, res, next) => {
 };
 // FIN MIDDLEWARE
 
-// MIDDLEWARE DELETEPOST TO DELETE MESSAGES 
+// MIDDLEWARE DELETEPOST pour supprimer les messages
 exports.deletePost = (req, res, next) => {
+    // console.log("delete post")
     const postID = req.params.id;
-    const userID = res.locals.userID;
+    const userID = req.query.userID;
+    // console.log(postID)
+    // console.log(userID)
 
     let sqlDeletePost;
     let sqlSelectPost;
@@ -123,6 +126,7 @@ exports.deletePost = (req, res, next) => {
     sqlSelectPost = "SELECT gifUrl FROM Post WHERE postID = ?";
     mysql.query(sqlSelectPost, [postID], function (err, result) {
         if (result > 0) {
+            // console.log("if")
             const filename = result[0].gifUrl.split("/images/")[1];
             fs.unlink(`images/${filename}`, () => { // On supprime le fichier image en amont
                 sqlDeletePost = "DELETE FROM Post WHERE userID = ? AND postID = ?";
@@ -131,17 +135,18 @@ exports.deletePost = (req, res, next) => {
                         console.log(err.message)
                         return res.status(500).json(err.message);
                     }
-                    res.status(200).json({ message: "Post supprimé !" });
+                    res.status(200).json({ message: "Post deleted !" });
                 });
             });
         } else {
+            // console.log("else")
             sqlDeletePost = "DELETE FROM Post WHERE userID = ? AND postID = ?";
             mysql.query(sqlDeletePost, [userID, postID], function (err, result) {
                 if (err) {
                     console.log(err.message)
                     return res.status(500).json(err.message);
                 }
-                res.status(200).json({ message: "Post supprimé !" });
+                res.status(200).json({ message: "Post deleted !" });
             });
         }
         if (err) {
@@ -153,8 +158,6 @@ exports.deletePost = (req, res, next) => {
     });
 };
 
-
-// MIDDLEWARE CREATECOMMENT 
 exports.createComment = (req, res, next) => {
     const postID = req.params.id;
     const userID = req.body.userID;
@@ -172,9 +175,7 @@ exports.createComment = (req, res, next) => {
         res.status(201).json({ message: "Commentaire crée !" });
     });
 };
-// END OF THAT MIDDLEWARE
 
-// MIDDLEWARE REACTPOST
 exports.getComments = (req, res, next) => {
     // console.log("getComments()")
     const userID = req.query.userID
@@ -213,10 +214,10 @@ exports.reactPost = (req, res, next) => {
             return res.status(500).json(err.message)
         }
         //console.log(result)
-
+        
         let sqlReaction = `INSERT INTO reaction VALUES (?, ?, ?, NOW())`
         let values = [userID, postID, reaction, reaction]
-
+    
         if (result[0]){
             sqlReaction = `UPDATE reaction SET reaction = ? WHERE reaction.userId = ? AND reaction.postId = ?`
             values = [reaction, userID, postID]
@@ -233,6 +234,10 @@ exports.reactPost = (req, res, next) => {
             res.status(201).json({ message: "Reaction succesfully updated!" });
         });
     })
+
+    
+    
+    
 };
 
-// END MIDDLEWARE
+// FIN MIDDLEWARE

@@ -2,8 +2,7 @@
   <div v-if="!connected">
     <strong>Connection to user has not been established</strong>
   </div>
-  <div v-else>
-    
+  <div class="post-container" v-else>
     <wall-nav />
 
     <create-post v-on:post-sent="sendPost" />
@@ -53,15 +52,14 @@
       </template>
 
       <template v-slot:userAvatar>
-        <img
-          v-bind:src="post.avatarUrl"
-          alt="User avatar" 
-        />
+        <img class="user-avatar" v-bind:src="post.avatarUrl" alt="User avatar" />
       </template>
 
-      <template v-slot:userName> {{ post.firstName }} {{ post.lastName }} </template>
+      <template v-slot:userName>
+        {{ post.firstName }} {{ post.lastName }}
+      </template>
       <template v-slot:userPseudo v-if="post.pseudo !== null">
-        {{ post.pseudo }}
+        @{{ post.pseudo }}
       </template>
       <template v-slot:postLegend>
         <div>
@@ -95,8 +93,10 @@
   </div>
 </template>
 
+
+
 <script>
-import CreateComment from '../components/CreateComment.vue';
+import CreateComment from "../components/CreateComment.vue";
 import CreatePost from "../components//CreatePost.vue";
 import Post from "../components//Post.vue";
 import WallNav from "../components/WallNav.vue";
@@ -108,7 +108,7 @@ export default {
     Post,
     CreateComment,
   },
-  data: function() {
+  data: function () {
     return {
       connected: true,
       posts: [],
@@ -120,92 +120,115 @@ export default {
   },
   methods: {
     getUserRole() {
-      this.$axios.get("/auth/role")
-      .then((response) => {
-        this.userRole = response.data[0].role;
-      })
-      .catch((error) => {
-        if (error.response.status === 401) {
-          // this.connected = false;
-          console.log("Connection to server failed")
-        }
-        else if(error.response.status === 500) {
-          console.log(error.response.data)
-        }
-        else {
-          console.log("Unknown server error")
-        }
-      })
+      this.$axios
+        .get("/auth/role")
+        .then((response) => {
+          this.userRole = response.data[0].role;
+        })
+        .catch((error) => {
+          if (error.response.status === 401) {
+            // this.connected = false;
+            console.log("Connection to server failed");
+          } else if (error.response.status === 500) {
+            console.log(error.response.data);
+          } else {
+            console.log("Unknown server error");
+          }
+        });
     },
     getPosts() {
-      console.log("trying to get posts")
-      this.$axios.get("/post", {params:{userID: sessionStorage.getItem("userID")}})
-      .then((response) => {
-        this.posts = response.data;
-        console.log(response.data)
-      })
-      .catch((error) => {
-        if (error.response.status === 401) {
-          // this.connected = false;
-          console.log("Connection to server failed")
-        }
-        else if(error.response.status === 500) {
-          console.log("Server error")
-        }
-        else {
-          console.log("Unknown server error")
-        }
-      })
+      // console.log("trying to get posts");
+      this.$axios
+        .get("/post", { params: { userID: sessionStorage.getItem("userID") } })
+        .then((response) => {
+          this.posts = response.data;
+          // console.log(response.data);
+        })
+        .catch((error) => {
+          if (error.response.status === 401) {
+            // this.connected = false;
+            console.log("Connection to server failed");
+            alert("Authorization failed, please log in again");
+            this.$router.push("/");
+          } else if (error.response.status === 500) {
+            console.log("Server error");
+            alert("Server error");
+          } else {
+            console.log("Unknown server error");
+            alert("Unknown server error");
+          }
+        });
     },
     sendPost(post) {
       const formData = new FormData();
       formData.append("image", post.image);
       formData.append("legend", post.legend);
       formData.append("userID", sessionStorage.getItem("userID"));
-      this.$axios.post("/post", formData)
-      .then(() => {
-        this.getPosts()
-      })
-      .catch((error) => {console.log(error)})
+      this.$axios
+        .post("/post", formData)
+        .then(() => {
+          this.getPosts();
+        })
+        .catch((error) => {
+          console.log(error);
+          alert("Couldn't send the post, try to log in again");
+        });
     },
-    deletePost(postId){
-      this.$axios.delete("/post/" + postId)
-      .then(() => {
-        const index = this.$data.posts.findIndex(post => post.postId === postId);
-        if (index != -1) {
-          this.$data.posts.splice(index, 1);
-        }
-      })
-      .catch((error) => {console.log(error)})
+    deletePost(postId) {
+      this.$axios
+        .delete("/post/" + postId)
+        .then(() => {
+          const index = this.$data.posts.findIndex(
+            (post) => post.postId === postId
+          );
+          if (index != -1) {
+            this.$data.posts.splice(index, 1);
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
     sendReaction(postId, reaction) {
-      this.$axios.post("/post/" + postId + "/react/", { reaction, userID:sessionStorage.getItem("userID") })
-      .then(() => {
-        this.getPosts()
-      })
-      .catch((error) => {console.log(error)})
+      this.$axios
+        .post("/post/" + postId + "/react/", {
+          reaction,
+          userID: sessionStorage.getItem("userID"),
+        })
+        .then(() => {
+          this.getPosts();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
     displayCommentInput(postId) {
       this.commentInputShow = true;
       this.commentID = postId;
-      console.log("comment id")
-      console.log(this.commentID)
+      console.log("comment id");
+      console.log(this.commentID);
     },
     updateComment(content) {
-      console.log("updating comment: " + content.comment)
+      console.log("updating comment: " + content.comment);
       this.commentContent = content.comment;
     },
     postComment(postId) {
-      const formValid = document.getElementsByName("commentForm")[0]
-      .checkValidity();
-      console.log(this.commentContent)
+      const formValid = document
+        .getElementsByName("commentForm")[0]
+        .checkValidity();
+      console.log(this.commentContent);
       if (formValid) {
         this.$axios
-        .post("/post/" + postId + "/comment/", {content: this.commentContent, userID: sessionStorage.getItem("userID")})
-        .then(() => {
-          this.commentInputShow = false;
-        })
-        .catch((error) => {console.log(error)})
+          .post("/post/" + postId + "/comment/", {
+            content: this.commentContent,
+            userID: sessionStorage.getItem("userID"),
+          })
+          .then(() => {
+            this.commentInputShow = false;
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       }
     },
   },
@@ -213,10 +236,10 @@ export default {
     this.getUserRole();
   },
   mounted() {
-    console.log("Wall mounted")
+    console.log("Wall mounted");
     this.getPosts();
     this.getUserRole();
-    document.title = "Groupomania - Wall"
+    document.title = "Groupomania - Wall";
   },
 };
 </script>
@@ -236,4 +259,3 @@ export default {
   margin-right: 1rem;
 }
 </style>
-

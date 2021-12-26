@@ -2,7 +2,7 @@
   <div v-if="!connected">
     <strong>Connection to user has not been established</strong>
   </div>
-  <div v-else>
+  <div class="post-container" v-else>
     <wall-nav />
 
     <post
@@ -15,7 +15,7 @@
       v-on:reaction-up="sendReaction(posts.at(-1).postID, 1)"
       v-on:reaction-none="sendReaction(posts.at(-1).postID, 0)"
     >
-      <template v-slot:postDelete v-if="userRole == 'admin'">
+      <template v-slot:deletePost v-if="userRole == 'admin'">
         <i
           class="fas fa-times"
           role="button"
@@ -24,7 +24,7 @@
         <span>Delete the post</span>
       </template>
 
-      <template v-slot:postDelete v-else-if="posts.at(-1).yourPost > 0">
+      <template v-slot:deletePost v-else-if="posts.at(-1).yourPost > 0">
         <i
           class="fas fa-times"
           role="button"
@@ -90,7 +90,7 @@
       </template>
 
       <template v-slot:userAvatar>
-        <img
+        <img class="user-avatar"
           v-bind:src="comment.avatarUrl"
           alt="User avatar"
         />
@@ -179,7 +179,7 @@ export default {
       this.posts = this.posts.filter(post => post.postID === this.$route.params.id)
     },
     getPosts() {
-      this.$axios.get("post")
+      this.$axios.get("/post", { params: { userID: sessionStorage.getItem("userID") } })
       .then((response) => {
         console.log("Gettign posts:")
         console.log(response.data)
@@ -241,7 +241,7 @@ export default {
       console.log(this.commentID)
     },
     updateComment(content) {
-      console.log("updating comment: " + content.comment)
+      // console.log("updating comment: " + content.comment)
       this.commentContent = content.comment;
     },
     postComment(postId) {

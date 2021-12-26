@@ -1,25 +1,64 @@
 <template>
   <div>
+    <div class="wall-nav-for-my-profile">
     <wall-nav />
-    <div>
-        <form class="changeForm" v-if="user.yourProfile === 1">
-        <span>avatar:<input type="file" accept="image/*" v-on:change="updateAvatar" /></span>
-        <span>pseudo:<input type="text" name="pseudo" v-model="user.pseudo" /></span>
-        <span>email:<input type="email" name="email" v-model="user.email" /></span>
-        <span>password:<input type="password" id="password" name="password" v-model="user.password" /></span>
-        <span>New password:<input type="password" id="newPassword" name="newPassword" v-model="user.newPassword" /></span>
-        <p>bio:<textarea type="text" name="bio" v-model="user.bio"></textarea></p>
-        <button type="submit" v-on:click.prevent="updateProfile">SendData</button>
-      </form>
     </div>
     <div>
-      <img :src="user.avatarUrl" />
+      <form class="changeForm" v-if="user.yourProfile === 1">
+        <div class="input-content">
+          <div class="input">
+            <span>Set avatar:</span>
+            <input type="file" accept="image/*" v-on:change="updateAvatar" />
+          </div>
+          <div class="input">
+            <span>Set pseudonym:</span>
+            <input type="text" name="pseudo" v-model="user.pseudo" />
+          </div>
+          <div class="input">
+            <span>Set email:</span>
+            <input type="email" name="email" v-model="user.email" />
+          </div>
+          <div class="input">
+            <span>Set bio:</span>
+            <textarea type="text" name="bio" v-model="user.bio"></textarea>
+          </div>
+          <div class="new-password-container">
+            <span>Change password</span>
+            <div class="input">
+              <span>New password:</span>
+              <input
+                type="password"
+                id="newPassword"
+                name="newPassword"
+                v-model="user.newPassword"
+              />
+            </div>
+            <div class="input">
+              <span>Current password:</span>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                v-model="user.password"
+              />
+            </div>
+          </div>
+          <div class="input-button-container">
+            <button type="submit" v-on:click.prevent="updateProfile">
+              SendData
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="user-info">
+      <img class="user-profile-picture" :src="user.avatarUrl" />
       <p>{{ user.firstName }} {{ user.lastName }}</p>
       <p v-if="user.bio != null">{{ user.bio }}</p>
       <p v-if="user.pseudo != null">{{ user.pseudo }}</p>
       <p>{{ user.email }}</p>
     </div>
-    <div v-if="user.yourProfile === 1">
+    <div class="account-delete-form" v-if="user.yourProfile === 1">
       <!-- user can delete his profile -->
       <form>
         <input type="password" id="passwordDelete" />
@@ -29,12 +68,14 @@
   </div>
 </template>
 
+
+
 <script>
-import WallNav from '../components/WallNav.vue';
+import WallNav from "../components/WallNav.vue";
 export default {
   name: "Profile",
   components: {
-    WallNav
+    WallNav,
   },
   data: () => {
     return {
@@ -45,16 +86,18 @@ export default {
   methods: {
     getUser() {
       this.$axios
-      //sessionStorage in this case: as long as user has token, sessionStorage keep his id
-        .get(`/auth/${this.$route.params.id}`, {params: { 
-          id: this.$route.params.id,
-          userID: sessionStorage.getItem("userID")
-        }})
+        //sessionStorage in this case: as long as user has token, sessionStorage keep his id
+        .get(`/auth/${this.$route.params.id}`, {
+          params: {
+            id: this.$route.params.id,
+            userID: sessionStorage.getItem("userID"),
+          },
+        })
         .then((data) => {
           this.user = data.data[0];
         })
         .catch((e) => {
-          console.log(e)
+          console.log(e);
         });
     },
     updateAvatar(event) {
@@ -110,10 +153,14 @@ export default {
         });
     },
     deleteProfile() {
-      // Delete user 
       const password = document.getElementById("passwordDelete").value;
       this.$axios
-        .delete("auth/delete", { data: { password: password, userID: sessionStorage.getItem("userID")} })
+        .delete("auth/delete", {
+          data: {
+            password: password,
+            userID: sessionStorage.getItem("userID"),
+          },
+        })
         .then(() => {
           sessionStorage.removeItem("userID");
           sessionStorage.removeItem("token");
@@ -130,7 +177,7 @@ export default {
   mounted() {
     // Récupère les posts et défini le titre
     this.getUser();
-    document.title = "Profile | Groupomania"; 
+    document.title = "Profile | Groupomania";
   },
   watch: {
     "$route.params.id": function () {
@@ -140,11 +187,39 @@ export default {
 };
 </script>
 
-
 <style>
-.changeForm {
+.wall-nav-for-my-profile{
+  display: flex;
+  flex-flow:column;
+  align-items: center;
+
+}
+.user-profile-picture{
+  height: 200px;
+  border-radius: 1.5rem;
+}
+.input-content {
   display: flex;
   flex-direction: column;
+  justify-content: space-around;
   align-items: center;
+  /* border: 2px solid blue; */
+  gap: 0.5rem;
+}
+.input {
+  display: flex;
+  flex-direction: row nowrap;
+  /* border: 2px solid cyan; */
+  width: 50%;
+  justify-content: space-between;
+}
+.new-password-container {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  /* border: 2px solid red; */
+  gap: 0.5rem;
 }
 </style>
