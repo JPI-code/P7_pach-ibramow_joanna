@@ -50,7 +50,7 @@ export default {
     //     // .checkValidity();
     //   const lastNameValid = document.getElementById("lastName").checkValidity();
     //   if (firstNameValid && lastNameValid) {
-      console.log("sending data from login panel");
+      // console.log("sending data from login panel");
       this.$emit("data-sent", this.$data);
     //   }
     },

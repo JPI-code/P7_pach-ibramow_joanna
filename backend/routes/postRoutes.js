@@ -12,5 +12,5 @@ router.put("/:id", auth, multer, postController.modifyPost)
 router.post("/:id/react", auth,postController.reactPost)
 router.post("/:id/comment", auth, multer,postController.createComment)
 router.delete("/:id", auth, postController.deletePost)
-
+router.get('/:id/comments', auth, postController.getComments)
 module.exports=router

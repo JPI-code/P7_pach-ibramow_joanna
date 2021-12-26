@@ -17,7 +17,7 @@
       </div>
       <div class="reactions">
         <i
-          class="fas fa-angle-up fa-lg"
+          class="fas fa-thumbs-up fa-lg"
           role="button"
           v-on:click="sendReactionUp"
         ></i>
@@ -26,7 +26,7 @@
           <slot name="postUp"></slot>
         </span>
         <i
-          class="fas fa-angle-down fa-lg"
+          class="fas fa-thumbs-up fa-lg"
           role="button"
           v-on:click="sendReactionDown"
         ></i>
@@ -105,8 +105,10 @@ export default {
         this.$emit("reaction-down")
       }
     },
-   displayCommentInput(postId) {
-      this.$emit("display-comment-input", postId);
+   displayCommentInput() {
+    //  console.log("POST ID")
+    //  console.log(this.postId)
+      this.$emit("display-comment-input", this.postId);
     },
     updateReaction() {
       if (this.reaction === 1) {

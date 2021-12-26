@@ -9,8 +9,8 @@
       v-if="posts"
       v-bind:userId="posts.at(-1).userID"
       v-bind:reaction="posts.at(-1).yourReaction"
-      v-bind:postID="posts.at(-1).postID"
-      v-on:d-comment-input="displayCommentInput(posts.at(-1).postID)"
+      v-bind:postId="posts.at(-1).postID"
+      v-on:display-comment-input="displayCommentInput"
       v-on:reaction-down="sendReaction(posts.at(-1).postID, -1)"
       v-on:reaction-up="sendReaction(posts.at(-1).postID, 1)"
       v-on:reaction-none="sendReaction(posts.at(-1).postID, 0)"
@@ -62,10 +62,11 @@
           v-on:comment-sent="updateComment"
           v-if="commentInputShow && commentID === posts.at(-1).postID"
         >
-          <button type="submit" 
-          v-on:click.prevent="postComment(posts.at(-1).postID)">
-            Send comment
-          </button>
+          <template v-slot:sendButton>
+            <button type="submit" v-on:click.prevent="postComment(posts.at(-1).postID)">
+              Send comment
+            </button>
+          </template>
         </create-comment>
       </template>
     </post>
@@ -139,14 +140,8 @@ export default {
       commentID: "",
       commentContent: "",
       userRole: "",
+      comments: [],
     };
-  },
-  computed: {
-    comments(){
-      return this.posts.filter(post => {
-        return post.postId != this.$route.params.id
-      })
-    }
   },
   methods: {
     getUserRole() {
@@ -168,10 +163,29 @@ export default {
         }
       })
     },
+    getComments(){
+      this.$axios.get(`post/${this.$route.params.id}/comments`, { params: {userID : sessionStorage.getItem("userID")}})
+      .then((response) =>{
+        console.log("Getting comments: ")
+        console.log(response.data)
+        this.comments = response.data
+      })
+      .catch((error) =>{
+        console.log("Error getting comments: ")
+        console.log(error)
+      })
+    },
+    selectCorrectPost(){
+      this.posts = this.posts.filter(post => post.postID === this.$route.params.id)
+    },
     getPosts() {
       this.$axios.get("post")
       .then((response) => {
+        console.log("Gettign posts:")
+        console.log(response.data)
         this.posts = response.data;
+        this.selectCorrectPost()
+        this.getComments()
       })
       .catch((error) => {
         if (error.response.status === 401) {
@@ -198,14 +212,17 @@ export default {
       .catch((error) => {console.log(error)})
     },
     deletePost(postId){
-      this.$axios.delete("/post/" + postId)
+      this.$axios.delete("/post/" + postId, {params: {userID: sessionStorage.getItem("userID")}})
       .then(() => {
-        const index = this.$data.posts.findIndex(post => post.postId === postId);
-        if (index != -1) {
-          this.$data.posts.splice(index, 1);
+        let index = this.posts.findIndex((post => post.postID === postId))
+        if (index === -1){
+          index = this.comments.findIndex((post => post.postID === postId))
+          this.comments.splice(index, 1)
+          this.getComments()
         }
         else{
-          console.log("Error deleting post")
+          this.posts.splice(index, 1)
+          this.$router.push("/Wall")
         }
       })
       .catch((error) => {console.log(error)})
@@ -220,16 +237,22 @@ export default {
     displayCommentInput(postId) {
       this.commentInputShow = true;
       this.commentID = postId;
+       console.log("comment id")
+      console.log(this.commentID)
     },
     updateComment(content) {
-      this.commentContent = content.body;
+      console.log("updating comment: " + content.comment)
+      this.commentContent = content.comment;
     },
     postComment(postId) {
+      console.log("POSTID:", postId)
       const formValid = document.getElementsByName("commentForm")[0]
       .checkValidity();
       if (formValid) {
+        console.log("commentContent: ")
+        console.log(this.commentContent)
         this.$axios
-        .post("/post/" + postId + "/comment/", {body: this.commentContent})
+        .post("/post/" + postId + "/comment/", {content: this.commentContent, userID: sessionStorage.getItem("userID")})
         .then(() => {
           this.getPosts()
           this.commentInputShow = false;

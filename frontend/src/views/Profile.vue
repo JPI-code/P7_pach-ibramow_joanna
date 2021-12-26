@@ -6,8 +6,10 @@
         <span>avatar:<input type="file" accept="image/*" v-on:change="updateAvatar" /></span>
         <span>pseudo:<input type="text" name="pseudo" v-model="user.pseudo" /></span>
         <span>email:<input type="email" name="email" v-model="user.email" /></span>
-        <span>password:<input type="password" name="password" v-model="user.password" /></span>
+        <span>password:<input type="password" id="password" name="password" v-model="user.password" /></span>
+        <span>New password:<input type="password" id="newPassword" name="newPassword" v-model="user.newPassword" /></span>
         <p>bio:<textarea type="text" name="bio" v-model="user.bio"></textarea></p>
+        <button type="submit" v-on:click.prevent="updateProfile">SendData</button>
       </form>
     </div>
     <div>
@@ -57,8 +59,8 @@ export default {
     },
     updateAvatar(event) {
       const image = event.target.files[0];
-      const formData = new FormData();
-      formData.append("file", image);
+      let formData = new FormData();
+      formData.append("image", image);
       formData.append("userID", sessionStorage.getItem("userID"));
       this.$axios
         .put("auth/modify", formData)
@@ -108,14 +110,15 @@ export default {
         });
     },
     deleteProfile() {
-      // Supprime l'utilisateur
+      // Delete user 
       const password = document.getElementById("passwordDelete").value;
       this.$axios
-        .delete("auth/delete", { data: { password: password } })
+        .delete("auth/delete", { data: { password: password, userID: sessionStorage.getItem("userID")} })
         .then(() => {
+          sessionStorage.removeItem("userID");
           sessionStorage.removeItem("token");
           delete this.$axios.defaults.headers.common["Authorization"];
-          this.$router.push({ name: "/" });
+          this.$router.push("/");
         })
         .catch((e) => {
           if (e.response.status === 401) {

@@ -25,7 +25,7 @@ exports.signup = (req, res, next) => {
         mysql.query(sqlSignup, values, function (err, result) {
             //error from database
             if (err) {
-                console.log(err.sqlMessage)
+                //console.log(err.sqlMessage)
                 return res.status(500).json(err.sqlMessage);
             }
                 res.status(201).json({ message: "Utilisateur créé !" });
@@ -69,11 +69,11 @@ exports.login = (req, res, next) => {
                 });
             })
             .catch((error) =>{
-                console.log(error);
+                //console.log(error);
                 res.status(500).json(error);
             });
     });
-    console.log(`user ${email} logged in`);
+    // console.log(`user ${email} logged in`);
 };
 // FIN MIDDLEWARE
 
@@ -82,7 +82,9 @@ exports.delete = (req, res, next) => {
     const password = req.body.password;
     let passwordHashed;
     // TO BE CHECKED  LOCALS
-    const userID = res.locals.userID;
+    const userID = req.body.userID
+    console.log(password)
+    console.log(userID)
 
     let sqlFindUser;
     let sqlDeleteUser;
@@ -138,7 +140,7 @@ exports.profile = (req, res, next) => {
     if (userIDAsked === "yourProfile")  {
         userIDAsked = userID;
     }
-    console.log(userIDAsked)
+    //console.log(userIDAsked)
 //Substitution format for dateCreation taken form MySql convention
 
     sqlGetUser = `SELECT email, firstName, lastName, pseudo, bio, avatarUrl, role, DATE_FORMAT(dateCreation, 'Inscrit depuis le %e %M %Y à %kh%i') AS dateCreation,
@@ -157,11 +159,14 @@ exports.profile = (req, res, next) => {
 
 // MIDDLEWARE MODIFY
 exports.modify = (req, res, next) => {
-    const userID = req.body.userID;
+    let userID = req.body.userID;
+    if (!userID) userID = req.userID
     const email = req.body.email;
     const pseudo = req.body.pseudo;
     const bio = req.body.bio;
     const password = req.body.password;
+    //console.log(req.file)
+    //console.log("USERID: ", userID)
 
     let sqlFindUser;
     let sqlModifyUser;

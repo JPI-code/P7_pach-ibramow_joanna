@@ -17,7 +17,7 @@
       v-on:reaction-up="sendReaction(post.postID, 1)"
       v-on:reaction-down="sendReaction(post.postID, -1)"
       v-on:reaction-none="sendReaction(post.postID, 0)"
-      v-on:display-comment-input="displayCommentInput(post.postID)"
+      v-on:display-comment-input="displayCommentInput"
     >
       <template v-slot:postDelete v-if="userRole == 'admin'">
         <i
@@ -36,7 +36,7 @@
           aria-hidden="true"
           title="Delete the post"
           role="button"
-          v-on:click="deletePost(post.postId)"
+          v-on:click="deletePost(post.postID)"
         ></i>
         <span class="sr-only">Delete the post</span>
       </template>
@@ -82,7 +82,7 @@
       <template v-slot:createComment>
         <create-comment
           v-on:comment-sent="updateComment"
-          v-if="commentInputShow"
+          v-if="commentInputShow && commentID === post.postID"
         >
           <template v-slot:sendButton>
             <button type="submit" v-on:click.prevent="postComment(post.postID)">
@@ -188,6 +188,8 @@ export default {
     displayCommentInput(postId) {
       this.commentInputShow = true;
       this.commentID = postId;
+      console.log("comment id")
+      console.log(this.commentID)
     },
     updateComment(content) {
       console.log("updating comment: " + content.comment)

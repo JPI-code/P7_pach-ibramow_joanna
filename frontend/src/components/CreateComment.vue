@@ -31,7 +31,7 @@ export default {
   },
   methods: {
     sendComment: function() {
-      console.log(this.$data.comment)
+      // console.log(this.$data.comment)
       this.$emit("comment-sent", this.$data);
     },
   },

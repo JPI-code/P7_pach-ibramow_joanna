@@ -20,20 +20,18 @@
         <i
           class="fas fa-thumbs-up"
           role="button"
-          :class="reactionUp"
           v-on:click="sendReactionUp"
         ></i>
-        <span>Like</span>
+        <span v-on:click="sendReactionUp">Like</span>
         <span>
           <slot name="commentUp"></slot>
         </span>
         <i
           class="fas fa-thumbs-down"
           role="button"
-          :class="reactionDown"
           v-on:click="sendReactionDown"
         ></i>
-        <span>Dislike</span>
+        <span v-on:click="sendReactionDown">Dislike</span>
         <span>
           <slot name="commentDown"></slot>
         </span>
@@ -91,7 +89,7 @@ updateReaction() {
   },
    mounted() {
     this.updateReaction();
-    console.log(this.body)
+    // console.log(this.body)
   },
   updated() {
     this.updateReaction();

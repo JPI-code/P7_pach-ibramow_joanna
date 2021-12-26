@@ -44,7 +44,7 @@ exports.getAllPosts = (req, res, next) => {
 
 // MIDDLEWARE GETONEPOST pour obtenir un message
 exports.getOnePost = (req, res, next) => {
-    const userID = res.locals.userID;
+    const userID = req.query.userID;
     const postID = req.params.id;
 
     let sqlGetPost;
@@ -69,7 +69,7 @@ exports.getOnePost = (req, res, next) => {
 
 // MIDDLEWARE CREATEPOST pour céer les messages
 exports.createPost = (req, res, next) => {
-    console.log(req.body) 
+    // console.log(req.body) 
     const userID = req.body.userID;
     const legend = req.body.legend;
     fs.readdir('../backend/images', function(err, files) {
@@ -78,12 +78,10 @@ exports.createPost = (req, res, next) => {
         //process audioFile here or pass it to a function...
         //console.log(file);
         const gifUrl = `${req.protocol}://${req.get("host")}/images/${file}`;
-        console.log(gifUrl)
         let sqlCreatePost;
         let values;
         sqlCreatePost = "INSERT INTO post VALUES (NULL, ?, ?, ?, NULL, NULL, NOW())";
         values = [userID, legend, gifUrl];
-        console.log(values) 
         mysql.query(sqlCreatePost, values, function (err, result) {
             if (err) {
                 console.log(err.sqlMessage)
@@ -97,9 +95,9 @@ exports.createPost = (req, res, next) => {
 
 exports.modifyPost = (req, res, next) => {
     const postID = req.params.id;
-    const userID = res.body.userID;
+    const userID = req.body.userID;
     const legend = req.body.legend;
-    const gifUrl = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
+    // const gifUrl = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
 
 
     
@@ -114,7 +112,7 @@ exports.modifyPost = (req, res, next) => {
 };
 // FIN MIDDLEWARE
 
-// MIDDLEWARE DELETEPOST pour supprimer les messages
+// MIDDLEWARE DELETEPOST TO DELETE MESSAGES 
 exports.deletePost = (req, res, next) => {
     const postID = req.params.id;
     const userID = res.locals.userID;
@@ -130,6 +128,7 @@ exports.deletePost = (req, res, next) => {
                 sqlDeletePost = "DELETE FROM Post WHERE userID = ? AND postID = ?";
                 mysql.query(sqlDeletePost, [userID, postID], function (err, result) {
                     if (err) {
+                        console.log(err.message)
                         return res.status(500).json(err.message);
                     }
                     res.status(200).json({ message: "Post supprimé !" });
@@ -139,26 +138,28 @@ exports.deletePost = (req, res, next) => {
             sqlDeletePost = "DELETE FROM Post WHERE userID = ? AND postID = ?";
             mysql.query(sqlDeletePost, [userID, postID], function (err, result) {
                 if (err) {
+                    console.log(err.message)
                     return res.status(500).json(err.message);
                 }
                 res.status(200).json({ message: "Post supprimé !" });
             });
         }
         if (err) {
+            console.log(err.message)
             return res.status(500).json(err.message);
         }
 
 
     });
 };
-// FIN MIDDLEWARE
 
-// MIDDLEWARE CREATECOMMENT pour créer des commentaires
+
+// MIDDLEWARE CREATECOMMENT 
 exports.createComment = (req, res, next) => {
     const postID = req.params.id;
     const userID = req.body.userID;
     const body = req.body.content;
-    console.log("comment-content:", req.body.content);
+    // console.log("comment-content:", req.body.content);
     let sqlCreateComment;
     let values;
 
@@ -171,27 +172,67 @@ exports.createComment = (req, res, next) => {
         res.status(201).json({ message: "Commentaire crée !" });
     });
 };
-// FIN MIDDLEWARE
+// END OF THAT MIDDLEWARE
 
-// MIDDLEWARE REACTPOST pour créer une réaction sur les messages
+// MIDDLEWARE REACTPOST
+exports.getComments = (req, res, next) => {
+    // console.log("getComments()")
+    const userID = req.query.userID
+    const postID = req.params.id
+    // console.log("userID: ", userID)
+    // console.log("postID: ", postID)
+
+    let sqlGetComments = `SELECT post.postID, post.userID, postIdComment, body, DATE_FORMAT(post.dateCreation, '%e %M %Y at %kh%i') AS dateCreation, firstName, lastName, pseudo, avatarUrl,
+    COUNT(CASE WHEN reaction.reaction = 1 then 1 else null end) AS countUp,
+    COUNT(CASE WHEN reaction.reaction = -1 then 1 else null end) AS countDown,
+    SUM(CASE WHEN reaction.userID = ? AND reaction.reaction = 1 then 1 WHEN reaction.userID = ? AND reaction.reaction = -1 then -1 else 0 end) AS yourReaction,
+    COUNT(CASE WHEN Post.userID = ? then 1 else null end) AS yourPost
+    FROM Post LEFT OUTER JOIN User ON Post.userID = User.userID LEFT OUTER JOIN Reaction ON Post.postID = Reaction.postID 
+    WHERE postIdComment = ? GROUP BY Post.postID ORDER BY post.postID DESC;`
+    mysql.query(sqlGetComments, [userID, userID, userID, postID], function(err, result) {
+        if (err){
+            console.log(err.sqlMessage)
+            return res.status(500).json(err.message)
+        }
+        // console.log(result)
+        res.status(201).json(result)
+    })
+
+}
+
 exports.reactPost = (req, res, next) => {
     const userID = req.body.userID;
     const reaction = req.body.reaction;
     const postID = req.params.id;
-    console.log("REACTION : " + reaction);
-    console.log("POSTID : " + postID);
-    console.log("USERID : " + userID);
-    let sqlReaction;
-    let values;
 
-    sqlReaction = `INSERT INTO Reaction VALUES (?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE reaction = ?`;
-    values = [userID, postID, reaction, reaction];
-    mysql.query(sqlReaction, values, function (err, result) {
-        if (err) {
-            return res.status(500).json(err.message);
+    const helpQuery = `SELECT COUNT(1) as count FROM reaction WHERE reaction.userId = ? AND reaction.postId = ? 
+                        GROUP BY reaction.userId, reaction.postId;`
+    mysql.query(helpQuery, [userID, postID], function(err, result) {
+        if (err){
+            console.log(err.sqlMessage)
+            return res.status(500).json(err.message)
         }
-        res.status(201).json({ message: "Reaction créée !" });
-    });
+        //console.log(result)
+
+        let sqlReaction = `INSERT INTO reaction VALUES (?, ?, ?, NOW())`
+        let values = [userID, postID, reaction, reaction]
+
+        if (result[0]){
+            sqlReaction = `UPDATE reaction SET reaction = ? WHERE reaction.userId = ? AND reaction.postId = ?`
+            values = [reaction, userID, postID]
+        }
+
+        // console.log(`${sqlReaction} - ${reaction}, ${userID}, ${postID}`)
+
+        mysql.query(sqlReaction, values, function (err, result) {
+            if (err) {
+                console.log(err.message)
+                return res.status(500).json(err.message);
+            }
+            //console.log("Reaction succesfully updated")
+            res.status(201).json({ message: "Reaction succesfully updated!" });
+        });
+    })
 };
 
-// FIN MIDDLEWARE
+// END MIDDLEWARE
